@@ -204,14 +204,16 @@
                 <!-- This will be the video entity that appears on the tracked image -->
                 <a-entity mindar-image-target="targetIndex: 0">
                     <a-video 
+                        id="ar-video"
                         src="assets/video.mp4"
                         position="0 0 0"
                         rotation="0 0 0"
                         width="1.6"
                         height="0.9"
-                        autoplay="true"
+                        autoplay="false"
                         loop="true"
-                        playsinline="true">
+                        playsinline="true"
+                        muted="false">
                     </a-video>
                 </a-entity>
 
@@ -271,6 +273,14 @@
                             return;
                         }
                         
+                        // Patch UI to prevent errors on mobile
+                        if (arSystem.ui && typeof arSystem.ui.showLoading === 'undefined') {
+                            arSystem.ui.showLoading = function() {};
+                            arSystem.ui.hideLoading = function() {};
+                            arSystem.ui.showError = function() {};
+                            arSystem.ui.hideError = function() {};
+                        }
+                        
                         sceneEl.addEventListener('arReady', () => {
                             status.textContent = '✅ AR Ready - Point camera at target image';
                             status.style.color = '#28a745';
@@ -279,11 +289,27 @@
                         sceneEl.addEventListener('targetFound', () => {
                             status.textContent = '🎯 Target Found - Playing video!';
                             status.style.color = '#007bff';
+                            // Play video when target is found
+                            const videoEl = document.querySelector('#ar-video');
+                            if (videoEl && videoEl.components.video) {
+                                const video = videoEl.components.video.el;
+                                if (video && video.paused) {
+                                    video.play().catch(e => console.log('Video play error:', e));
+                                }
+                            }
                         });
 
                         sceneEl.addEventListener('targetLost', () => {
                             status.textContent = '👁️ Target Lost - Point camera at target image';
                             status.style.color = '#ffc107';
+                            // Pause video when target is lost
+                            const videoEl = document.querySelector('#ar-video');
+                            if (videoEl && videoEl.components.video) {
+                                const video = videoEl.components.video.el;
+                                if (video && !video.paused) {
+                                    video.pause();
+                                }
+                            }
                         });
 
                         sceneEl.addEventListener('arError', (error) => {
@@ -291,6 +317,17 @@
                             status.style.color = '#dc3545';
                             console.error('AR Error:', error);
                         });
+
+                        // Ensure video is paused initially
+                        const videoEl = document.querySelector('#ar-video');
+                        if (videoEl) {
+                            setTimeout(() => {
+                                const video = videoEl.querySelector('video') || videoEl;
+                                if (video && !video.paused) {
+                                    video.pause();
+                                }
+                            }, 500);
+                        }
 
                         // Start the AR system
                         arSystem.start();
