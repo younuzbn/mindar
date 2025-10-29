@@ -1,0 +1,35 @@
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node modules (if using npm packages)
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Video files (often large) - commented out to allow deployment
+# assets/*.mp4
+# assets/*.mov
+# assets/*.avi
+
+# MindAR files (user-generated) - commented out to allow deployment
+# assets/target.mind
+
+# SSL Certificates
+server.pem
+*.pem
+
