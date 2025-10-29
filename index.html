@@ -81,7 +81,15 @@
         #ar-scene canvas {
             width: 100% !important;
             height: 100% !important;
-            display: block;
+            display: block !important;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Ensure A-Frame canvas is visible */
+        a-scene {
+            opacity: 1;
         }
 
         .ar-overlay {
@@ -191,7 +199,7 @@
                 embedded="true"
                 vr-mode-ui="enabled: false"
                 id="ar-scene"
-                style="display: none; position: absolute; width: 100%; height: 100%;">
+                style="position: absolute; width: 100%; height: 100%; visibility: hidden;">
                 
                 <!-- This will be the video entity that appears on the tracked image -->
                 <a-entity mindar-image-target="targetIndex: 0">
@@ -230,11 +238,17 @@
             const status = document.getElementById('status');
 
             overlay.classList.add('hidden');
+            arScene.style.visibility = 'visible';
             arScene.style.display = 'block';
             startBtn.style.display = 'none';
             stopBtn.style.display = 'inline-block';
             status.textContent = '🎬 Starting AR...';
             status.style.color = '#666';
+            
+            // Force scene to render
+            if (arScene.hasAttribute('loaded')) {
+                arScene.removeAttribute('loaded');
+            }
 
             // Wait for the scene to be ready
             sceneEl = document.querySelector('a-scene');
@@ -245,8 +259,8 @@
                 return;
             }
 
-            // Wait for scene to initialize
-            sceneEl.addEventListener('loaded', () => {
+            // Function to initialize AR
+            function initializeAR() {
                 setTimeout(() => {
                     try {
                         arSystem = sceneEl.systems['mindar-image-system'];
@@ -286,8 +300,16 @@
                         status.style.color = '#dc3545';
                         console.error('Error starting AR:', error);
                     }
-                }, 500);
-            });
+                }, 1000);
+            }
+
+            // Check if scene is already loaded
+            if (sceneEl.hasLoaded) {
+                initializeAR();
+            } else {
+                // Wait for scene to initialize
+                sceneEl.addEventListener('loaded', initializeAR, { once: true });
+            }
         }
 
         function stopAR() {
@@ -302,6 +324,7 @@
             }
 
             overlay.classList.remove('hidden');
+            arScene.style.visibility = 'hidden';
             arScene.style.display = 'none';
             startBtn.style.display = 'inline-block';
             stopBtn.style.display = 'none';
