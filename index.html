@@ -194,8 +194,7 @@
                 <button class="btn" id="startBtn" onclick="startAR()">🚀 Start AR</button>
             </div>
             <a-scene 
-                mindar-image-system 
-                image-target-src="assets/targets-2.mind"
+                mindar-image-system="imageTargetSrc: https://younuzbn.github.io/mindar/assets/targets-2.mind"
                 embedded="true"
                 vr-mode-ui="enabled: false"
                 id="ar-scene"
@@ -364,6 +363,13 @@
                                     return target[prop];
                                 }
                             });
+                            
+                            // Ensure image-target-src is set correctly
+                            const imageTargetSrc = sceneEl.getAttribute('mindar-image-system')?.imageTargetSrc;
+                            if (!imageTargetSrc || imageTargetSrc === 'undefined') {
+                                sceneEl.setAttribute('mindar-image-system', 'imageTargetSrc', 'https://younuzbn.github.io/mindar/assets/targets-2.mind');
+                                console.log('Set image-target-src programmatically');
+                            }
                         } catch (e) {
                             console.warn('UI patch warning:', e);
                             // Fallback: create minimal UI
