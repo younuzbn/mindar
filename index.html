@@ -343,15 +343,37 @@
                             return;
                         }
                         
-                        // Ensure UI is patched before starting
-                        if (!arSystem.ui) {
-                            arSystem.ui = {};
-                        }
-                        ['showLoading', 'hideLoading', 'showError', 'hideError'].forEach(method => {
-                            if (typeof arSystem.ui[method] === 'undefined') {
-                                arSystem.ui[method] = function() {};
+                        // Ensure UI is patched before starting - defensive approach
+                        try {
+                            if (!arSystem.ui) {
+                                arSystem.ui = {};
                             }
-                        });
+                            ['showLoading', 'hideLoading', 'showError', 'hideError'].forEach(method => {
+                                if (typeof arSystem.ui[method] === 'undefined') {
+                                    arSystem.ui[method] = function() {};
+                                }
+                            });
+                            
+                            // Also wrap the UI object with a Proxy to catch any access attempts
+                            const originalUI = arSystem.ui;
+                            arSystem.ui = new Proxy(originalUI, {
+                                get: function(target, prop) {
+                                    if (prop === 'showLoading' || prop === 'hideLoading' || prop === 'showError' || prop === 'hideError') {
+                                        return target[prop] || function() {};
+                                    }
+                                    return target[prop];
+                                }
+                            });
+                        } catch (e) {
+                            console.warn('UI patch warning:', e);
+                            // Fallback: create minimal UI
+                            arSystem.ui = {
+                                showLoading: function() {},
+                                hideLoading: function() {},
+                                showError: function() {},
+                                hideError: function() {}
+                            };
+                        }
                         
                         sceneEl.addEventListener('arReady', () => {
                             status.textContent = '✅ AR Ready - Point camera at target image';
