@@ -189,8 +189,6 @@
                 mindar-image-system 
                 image-target-src="assets/target.mind"
                 embedded="true"
-                ui-error="showErrorOverlay: true"
-                ui-loading="hideLoadingUI: false"
                 vr-mode-ui="enabled: false"
                 id="ar-scene"
                 style="display: none; position: absolute; width: 100%; height: 100%;">
@@ -238,55 +236,58 @@
             status.textContent = '🎬 Starting AR...';
             status.style.color = '#666';
 
-            // Wait a bit for the scene to render
-            setTimeout(() => {
-                sceneEl = document.querySelector('a-scene');
-                
-                if (!sceneEl) {
-                    status.textContent = '❌ Error: Scene not found';
-                    status.style.color = '#dc3545';
-                    return;
-                }
+            // Wait for the scene to be ready
+            sceneEl = document.querySelector('a-scene');
+            
+            if (!sceneEl) {
+                status.textContent = '❌ Error: Scene not found';
+                status.style.color = '#dc3545';
+                return;
+            }
 
-                arSystem = sceneEl.systems['mindar-image-system'];
-                
-                if (!arSystem) {
-                    status.textContent = '❌ Error: AR System not found';
-                    status.style.color = '#dc3545';
-                    return;
-                }
-                
-                sceneEl.addEventListener('arReady', () => {
-                    status.textContent = '✅ AR Ready - Point camera at target image';
-                    status.style.color = '#28a745';
-                });
+            // Wait for scene to initialize
+            sceneEl.addEventListener('loaded', () => {
+                setTimeout(() => {
+                    try {
+                        arSystem = sceneEl.systems['mindar-image-system'];
+                        
+                        if (!arSystem) {
+                            status.textContent = '❌ Error: AR System not found';
+                            status.style.color = '#dc3545';
+                            return;
+                        }
+                        
+                        sceneEl.addEventListener('arReady', () => {
+                            status.textContent = '✅ AR Ready - Point camera at target image';
+                            status.style.color = '#28a745';
+                        });
 
-                sceneEl.addEventListener('targetFound', () => {
-                    status.textContent = '🎯 Target Found - Playing video!';
-                    status.style.color = '#007bff';
-                });
+                        sceneEl.addEventListener('targetFound', () => {
+                            status.textContent = '🎯 Target Found - Playing video!';
+                            status.style.color = '#007bff';
+                        });
 
-                sceneEl.addEventListener('targetLost', () => {
-                    status.textContent = '👁️ Target Lost - Point camera at target image';
-                    status.style.color = '#ffc107';
-                });
+                        sceneEl.addEventListener('targetLost', () => {
+                            status.textContent = '👁️ Target Lost - Point camera at target image';
+                            status.style.color = '#ffc107';
+                        });
 
-                sceneEl.addEventListener('arError', (error) => {
-                    status.textContent = '❌ AR Error: ' + (error.detail || 'Unknown error');
-                    status.style.color = '#dc3545';
-                    console.error('AR Error:', error);
-                });
+                        sceneEl.addEventListener('arError', (error) => {
+                            status.textContent = '❌ AR Error: ' + (error.detail || 'Unknown error');
+                            status.style.color = '#dc3545';
+                            console.error('AR Error:', error);
+                        });
 
-                // Start the AR system
-                try {
-                    arSystem.start();
-                    status.textContent = '🔄 Initializing camera...';
-                } catch (error) {
-                    status.textContent = '❌ Error starting AR: ' + error.message;
-                    status.style.color = '#dc3545';
-                    console.error('Error starting AR:', error);
-                }
-            }, 100);
+                        // Start the AR system
+                        arSystem.start();
+                        status.textContent = '🔄 Initializing camera...';
+                    } catch (error) {
+                        status.textContent = '❌ Error starting AR: ' + error.message;
+                        status.style.color = '#dc3545';
+                        console.error('Error starting AR:', error);
+                    }
+                }, 500);
+            });
         }
 
         function stopAR() {
