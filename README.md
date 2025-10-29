@@ -164,6 +164,25 @@ Want to customize further? Learn about:
 - **MindAR Component**: [MindAR Image Tracking](https://hiukim.github.io/mind-ar-js-doc/)
 - **Video Attributes**: [A-Frame Video Component](https://aframe.io/docs/)
 
+## 🌐 GitHub Pages Deployment
+
+This project is ready for GitHub Pages deployment!
+
+### Quick Deploy:
+
+1. **Push to GitHub** (see PUSH_INSTRUCTIONS.md for authentication help)
+2. **Enable GitHub Pages**:
+   - Go to repository Settings → Pages
+   - Source: `main` branch, `/ (root)` folder
+   - Save
+3. **Access your site**: `https://younuzbn.github.io/mindar/`
+
+### Notes:
+- ✅ HTTPS is automatically provided by GitHub Pages
+- ✅ All assets (video.mp4, target.mind) are included
+- ✅ `.nojekyll` file ensures proper file serving
+- ✅ Works on mobile devices too!
+
 ## 📝 License
 
 This project is for educational purposes. MindAR.js is an open-source project.
