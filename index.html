@@ -412,9 +412,9 @@
                             console.error('AR Error:', error);
                             
                             // Check if it's a file loading error
-                            if (error.detail && error.detail.includes('404') || error.detail && error.detail.includes('undefined')) {
-                                status.textContent = '❌ Error: target.mind file not found. Please check the file path.';
-                            } else if (error.detail && error.detail.includes('Extra') || error.detail && error.detail.includes('byte')) {
+                            if (error.detail && (error.detail.includes('404') || error.detail.includes('undefined'))) {
+                                status.textContent = '❌ Error: target.mind file not found. Path: ' + (sceneEl.getAttribute('mindar-image-system')?.imageTargetSrc || 'not set');
+                            } else if (error.detail && (error.detail.includes('Extra') || error.detail.includes('byte'))) {
                                 status.textContent = '❌ Error: target.mind file is corrupted. Please regenerate it.';
                             }
                         });
