@@ -316,11 +316,6 @@
             status.textContent = '🎬 Starting AR...';
             status.style.color = '#666';
             
-            // Force scene to render
-            if (arScene.hasAttribute('loaded')) {
-                arScene.removeAttribute('loaded');
-            }
-
             // Wait for the scene to be ready
             sceneEl = document.querySelector('a-scene');
             
@@ -328,6 +323,19 @@
                 status.textContent = '❌ Error: Scene not found';
                 status.style.color = '#dc3545';
                 return;
+            }
+            
+            // Set image-target-src BEFORE initialization (critical!)
+            const targetUrl = 'https://raw.githubusercontent.com/younuzbn/ar/main/targets-2.mind';
+            const currentSrc = sceneEl.getAttribute('mindar-image-system')?.imageTargetSrc;
+            if (!currentSrc || currentSrc === 'undefined' || !currentSrc.includes('targets-2.mind')) {
+                sceneEl.setAttribute('mindar-image-system', 'imageTargetSrc', targetUrl);
+                console.log('Set image-target-src to:', targetUrl);
+            }
+            
+            // Force scene to render
+            if (arScene.hasAttribute('loaded')) {
+                arScene.removeAttribute('loaded');
             }
 
             // Function to initialize AR
@@ -364,11 +372,16 @@
                                 }
                             });
                             
-                            // Ensure image-target-src is set correctly
+                            // Verify image-target-src is set correctly
                             const imageTargetSrc = sceneEl.getAttribute('mindar-image-system')?.imageTargetSrc;
+                            console.log('Current imageTargetSrc:', imageTargetSrc);
                             if (!imageTargetSrc || imageTargetSrc === 'undefined') {
                                 sceneEl.setAttribute('mindar-image-system', 'imageTargetSrc', 'https://raw.githubusercontent.com/younuzbn/ar/main/targets-2.mind');
-                                console.log('Set image-target-src programmatically');
+                                console.log('Re-set image-target-src programmatically');
+                                // Force system to reload with new path
+                                if (arSystem && typeof arSystem.stop === 'function') {
+                                    try { arSystem.stop(); } catch(e) {}
+                                }
                             }
                         } catch (e) {
                             console.warn('UI patch warning:', e);
