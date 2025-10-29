@@ -412,28 +412,6 @@
                             console.error('AR Error:', error);
                         });
 
-                        // Patch UI to prevent errors on mobile
-                        if (!arSystem.ui) {
-                            arSystem.ui = {};
-                        }
-                        if (typeof arSystem.ui.showLoading === 'undefined') {
-                            arSystem.ui.showLoading = function() {};
-                            arSystem.ui.hideLoading = function() {};
-                            arSystem.ui.showError = function() {};
-                            arSystem.ui.hideError = function() {};
-                        }
-                        // Also patch the prototype if needed
-                        if (arSystem.constructor && arSystem.constructor.prototype) {
-                            const proto = arSystem.constructor.prototype;
-                            if (!proto.ui) {
-                                proto.ui = {};
-                            }
-                            if (typeof proto.ui.showLoading === 'undefined') {
-                                proto.ui.showLoading = function() {};
-                                proto.ui.hideLoading = function() {};
-                            }
-                        }
-
                         // Ensure video is paused initially
                         const videoEl = document.querySelector('#ar-video');
                         if (videoEl) {
