@@ -232,6 +232,76 @@
         let sceneEl;
         let arSystem;
 
+        // Patch MindAR UI before initialization to prevent errors
+        // Run immediately and also after scripts load
+        function patchMindARUI() {
+            if (typeof AFRAME !== 'undefined') {
+                // Patch the system prototype
+                if (AFRAME.systems && AFRAME.systems['mindar-image-system']) {
+                    const MindARSystem = AFRAME.systems['mindar-image-system'];
+                    
+                    // Patch prototype init
+                    if (MindARSystem.prototype) {
+                        const originalInit = MindARSystem.prototype.init || function() {};
+                        
+                        MindARSystem.prototype.init = function() {
+                            // Ensure UI object exists before any operations
+                            if (!this.ui) {
+                                this.ui = {};
+                            }
+                            
+                            // Add missing UI methods
+                            if (typeof this.ui.showLoading === 'undefined') {
+                                this.ui.showLoading = function() {};
+                                this.ui.hideLoading = function() {};
+                                this.ui.showError = function() {};
+                                this.ui.hideError = function() {};
+                            }
+                            
+                            // Call original init
+                            return originalInit.call(this);
+                        };
+                    }
+                }
+                
+                // Also patch existing instances
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(() => {
+                        const scenes = document.querySelectorAll('a-scene');
+                        scenes.forEach(scene => {
+                            if (scene.systems && scene.systems['mindar-image-system']) {
+                                const system = scene.systems['mindar-image-system'];
+                                if (!system.ui) {
+                                    system.ui = {};
+                                }
+                                if (typeof system.ui.showLoading === 'undefined') {
+                                    system.ui.showLoading = function() {};
+                                    system.ui.hideLoading = function() {};
+                                    system.ui.showError = function() {};
+                                    system.ui.hideError = function() {};
+                                }
+                            }
+                        });
+                    }, 100);
+                });
+            }
+        }
+        
+        // Try to patch immediately
+        patchMindARUI();
+        
+        // Also patch after DOM loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', patchMindARUI);
+        } else {
+            patchMindARUI();
+        }
+        
+        // Patch after A-Frame loads
+        window.addEventListener('load', () => {
+            setTimeout(patchMindARUI, 100);
+        });
+
         function startAR() {
             const overlay = document.getElementById('overlay');
             const arScene = document.getElementById('ar-scene');
@@ -272,6 +342,16 @@
                             status.style.color = '#dc3545';
                             return;
                         }
+                        
+                        // Ensure UI is patched before starting
+                        if (!arSystem.ui) {
+                            arSystem.ui = {};
+                        }
+                        ['showLoading', 'hideLoading', 'showError', 'hideError'].forEach(method => {
+                            if (typeof arSystem.ui[method] === 'undefined') {
+                                arSystem.ui[method] = function() {};
+                            }
+                        });
                         
                         sceneEl.addEventListener('arReady', () => {
                             status.textContent = '✅ AR Ready - Point camera at target image';
